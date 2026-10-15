@@ -1,0 +1,42 @@
+name: Diff
+
+on:
+  pull_request:
+
+jobs:
+  diff:
+    runs-on: ubuntu-latest
+    container: texlive/texlive:latest
+    outputs:
+      url: ${{ steps.upload.outputs.artifact-url }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: base
+      - run: latexdiff base/main.tex main.tex > diff.tex
+      - run: latexmk diff.tex
+      - id: upload
+        uses: actions/upload-artifact@v7
+        with:
+          path: .build/diff.pdf
+          archive: false
+
+  # separate job because the TeX Live container has no `gh`
+  comment:
+    needs: diff
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      # edit the bot's last comment instead of adding one per push
+      - run: >
+          gh pr comment "$PR" --repo "$REPO" --edit-last --create-if-none
+          --body "📄 [diff.pdf]($URL) for $SHA"
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+          URL: ${{ needs.diff.outputs.url }}
