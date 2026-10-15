@@ -1,0 +1,19 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: texlive/texlive:latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: latexmk main.tex
+      - uses: actions/upload-artifact@v7
+        with:
+          path: .build/main.pdf
+          archive: false
