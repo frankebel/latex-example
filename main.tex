@@ -1,14 +1,22 @@
-\documentclass{article}
-\usepackage{graphicx} % Required for inserting images
+\documentclass[a4paper]{article}
 
-\title{latex-example}
-\author{frank ebel}
-\date{October 2026}
+\usepackage[english]{babel}
+\usepackage{csquotes}
+\usepackage{biblatex}
+\addbibresource{references.bib}
+
+\title{A Git Tutorial Example}
+\author{Frank Ebel}
 
 \begin{document}
 
 \maketitle
 
 \section{Introduction}
+
+Special relativity was introduced by Einstein~\cite{einstein}.
+A classic textbook on quantum mechanics is the one by Dirac~\cite{dirac}.
+
+\printbibliography
 
 \end{document}
