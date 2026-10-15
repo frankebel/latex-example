@@ -1,0 +1,41 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: texlive/texlive:latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: latexmk main.tex
+      - uses: actions/upload-artifact@v7
+        with:
+          path: .build/main.pdf
+          archive: false
+
+  # fixed download URL for the PDF of the newest commit on main
+  release:
+    if: github.event_name == 'push'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: main.pdf
+      # recreate the release so the tag moves to the new commit;
+      # fails harmlessly on the first run, when there is nothing to delete
+      - run: gh release delete latest --cleanup-tag --yes || true
+      # prerelease keeps GitHub's "Latest" marker free for real versions
+      - run: >
+          gh release create latest main.pdf --target "$GITHUB_SHA" --prerelease
+          --title "Latest build" --notes "PDF of the newest commit on main."
