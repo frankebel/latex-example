@@ -1,0 +1,6 @@
+# commands that print no text, so a space after them is not swallowed (warning 1);
+# without `=`, the list is appended to the default one
+Silent
+{
+    \printbibliography
+}
